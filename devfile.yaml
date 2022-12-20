@@ -52,7 +52,7 @@ commands:
     exec:
       label: 1-Package and start the application.
       component: wildfly
-      commandLine: mvn ${MVN_ARGS_APPEND} clean package && cp target/*.war target/server/standalone/deployments/ROOT.war && JBOSS_HOME=${PROJECT_SOURCE}/target/server; $JBOSS_HOME/bin/standalone.sh -Djboss.node.name=numberguess
+      commandLine: mvn ${MVN_ARGS_APPEND} clean package && cp target/*.war target/server/standalone/deployments/ROOT.war && JBOSS_HOME=${PROJECT_SOURCE}/target/server; /usr/local/s2i/run
       workingDir: ${PROJECT_SOURCE}
       group:
         kind: run
