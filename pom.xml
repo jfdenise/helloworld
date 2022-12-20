@@ -212,6 +212,7 @@
                         <artifactId>eap-maven-plugin</artifactId>
                         <version>${version.eap.maven.plugin}</version>
                         <configuration>
+                            <skipDeployment>true</skipDeployment>
                             <channels>
                                 <channel>
                                     <groupId>org.jboss.eap.channels</groupId>

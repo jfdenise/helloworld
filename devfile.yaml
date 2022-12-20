@@ -3,7 +3,7 @@ metadata:
   name: java-wildfly-helloword
   version: 2.0.0
   website: https://wildfly.org
-  displayName: JBoss EAp helloworld
+  displayName: JBoss EAP helloworld
   description: Upstream WildFly
   icon: https://design.jboss.org/wildfly/logo/final/wildfly_logomark.svg
   tags: ['Java', 'JBoss EAP']
@@ -12,7 +12,7 @@ metadata:
 components:
   - name: wildfly
     container:
-      image: quay.io/wildfly/wildfly-s2i:latest
+      image: registry.redhat.io/jboss-eap-8-tech-preview/eap8-openjdk17-builder-openshift-rhel8:latest
       memoryLimit: 1512Mi
       mountSources: true
       volumeMounts:
@@ -70,7 +70,7 @@ commands:
     exec:
       label: 3-Package and start the application in debug mode.
       component: wildfly
-      commandLine: mvn ${MVN_ARGS_APPEND} clean package && cp target/*.war target/server/standalone/deployments/ROOT.war && JAVA_DEBUG=true; JBOSS_HOME=${PROJECT_SOURCE}/target/server; /usr/local/s2i/run
+      commandLine: mvn ${MVN_ARGS_APPEND} clean package && cp target/*.war target/server/standalone/deployments/ROOT.war && SERVER_ARGS="--debug"true; JBOSS_HOME=${PROJECT_SOURCE}/target/server; /usr/local/s2i/run
       workingDir: ${PROJECT_SOURCE}
       group:
         kind: debug
