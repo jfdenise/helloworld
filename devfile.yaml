@@ -29,21 +29,21 @@ components:
           value: "5005"
       endpoints:
         - name: debug
-          exposure: none
+          exposure: internal
           protocol: tcp
           targetPort: 5005
         - name: 'http'
-          protocol: tcp
+          protocol: http
           targetPort: 8080
           exposure: public
         - name: 'management'
           targetPort: 9990
-          protocol: tcp
-          exposure: none
+          protocol: http
+          exposure: internal
         - name: 'transaction'
           protocol: tcp
           targetPort: 4172
-          exposure: none
+          exposure: internal
   - name: m2-repository
     volume:
       size: 3Gi
@@ -52,7 +52,7 @@ commands:
     exec:
       label: 1-Package and start the application.
       component: wildfly
-      commandLine: mvn ${MVN_ARGS_APPEND} clean package && cp target/*.war target/server/standalone/deployments/ROOT.war && JBOSS_HOME=${PROJECT_SOURCE}/target/server; /usr/local/s2i/run
+      commandLine: mvn ${MVN_ARGS_APPEND} clean package && cp target/*.war target/server/standalone/deployments/ROOT.war && JBOSS_HOME=${PROJECT_SOURCE}/target/server; $JBOSS_HOME/bin/standalone.sh -Djboss.node.name=numberguess
       workingDir: ${PROJECT_SOURCE}
       group:
         kind: run
@@ -70,7 +70,7 @@ commands:
     exec:
       label: 3-Package and start the application in debug mode.
       component: wildfly
-      commandLine: mvn ${MVN_ARGS_APPEND} clean package && cp target/*.war target/server/standalone/deployments/ROOT.war && SERVER_ARGS="--debug"true; JBOSS_HOME=${PROJECT_SOURCE}/target/server; /usr/local/s2i/run
+      commandLine: mvn ${MVN_ARGS_APPEND} clean package && cp target/*.war target/server/standalone/deployments/ROOT.war && SERVER_ARGS="--debug"; JBOSS_HOME=${PROJECT_SOURCE}/target/server; /usr/local/s2i/run
       workingDir: ${PROJECT_SOURCE}
       group:
         kind: debug
