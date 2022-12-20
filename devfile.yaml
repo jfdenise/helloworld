@@ -1,0 +1,86 @@
+schemaVersion: 2.1.0
+metadata:
+  name: java-wildfly-helloword
+  version: 2.0.0
+  website: https://wildfly.org
+  displayName: JBoss EAp helloworld
+  description: Upstream WildFly
+  icon: https://design.jboss.org/wildfly/logo/final/wildfly_logomark.svg
+  tags: ['Java', 'JBoss EAP']
+  projectType: 'eap'
+  language: 'java'
+components:
+  - name: wildfly
+    container:
+      image: quay.io/wildfly/wildfly-s2i:latest
+      memoryLimit: 1512Mi
+      mountSources: true
+      volumeMounts:
+        - name: m2-repository
+          path: /home/jboss/.m2/repository
+      env:
+        - name: GC_METASPACE_SIZE
+          value: '96'
+        - name: JAVA_OPTS
+          value: '-Djava.security.egd=file:/dev/urandom'
+        - name: MVN_ARGS_APPEND
+          value: '-Popenshift -Dwildfly.package.deployment.skip=true -s /home/jboss/.m2/settings.xml -Dmaven.repo.local=/home/jboss/.m2/repository -Dcom.redhat.xpaas.repo.jbossorg'
+        - name: JAVA_DEBUG_PORT
+          value: "5005"
+      endpoints:
+        - name: debug
+          exposure: none
+          protocol: tcp
+          targetPort: 5005
+        - name: 'http'
+          protocol: tcp
+          targetPort: 8080
+          exposure: public
+        - name: 'management'
+          targetPort: 9990
+          protocol: tcp
+          exposure: none
+        - name: 'transaction'
+          protocol: tcp
+          targetPort: 4172
+          exposure: none
+  - name: m2-repository
+    volume:
+      size: 3Gi
+commands:
+  - id: start
+    exec:
+      label: 1-Package and start the application.
+      component: wildfly
+      commandLine: mvn ${MVN_ARGS_APPEND} clean package && cp target/*.war target/server/standalone/deployments/ROOT.war && JBOSS_HOME=${PROJECT_SOURCE}/target/server; /usr/local/s2i/run
+      workingDir: ${PROJECT_SOURCE}
+      group:
+        kind: run
+        isDefault: true
+  - id: shutdown
+    exec:
+      label: 2-Stop the application.
+      component: wildfly
+      commandLine: mvn ${MVN_ARGS_APPEND} org.wildfly.plugins:wildfly-maven-plugin:shutdown
+      workingDir: ${PROJECT_SOURCE}
+      group:
+        kind: run
+        isDefault: false
+  - id: debug
+    exec:
+      label: 3-Package and start the application in debug mode.
+      component: wildfly
+      commandLine: mvn ${MVN_ARGS_APPEND} clean package && cp target/*.war target/server/standalone/deployments/ROOT.war && JAVA_DEBUG=true; JBOSS_HOME=${PROJECT_SOURCE}/target/server; /usr/local/s2i/run
+      workingDir: ${PROJECT_SOURCE}
+      group:
+        kind: debug
+        isDefault: true
+  - id: deploy
+    exec:
+      label: 4-Update the application.
+      component: wildfly
+      commandLine: mvn ${MVN_ARGS_APPEND} package && cp target/*.war target/server/standalone/deployments/ROOT.war
+      workingDir: ${PROJECT_SOURCE}
+      group:
+        kind: build
+        isDefault: true
